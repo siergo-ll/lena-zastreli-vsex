@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оружейная комната</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: radial-gradient(circle at 50% 0%, #2b2b3a 0%, #14141c 60%, #0a0a10 100%);
+    padding: 20px;
+    overflow: hidden;
+  }
+
+  .score-wrap {
+    text-align: center;
+    padding: 10px 50px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(255, 80, 60, 0.35);
+    box-shadow: 0 0 30px rgba(255, 60, 40, 0.25),
+                inset 0 0 25px rgba(255, 60, 40, 0.08);
+    transition: transform 0.08s;
+  }
+  .score-wrap.bump { transform: scale(1.06); }
+  .score-label {
+    font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
+    color: #ff6a50; opacity: 0.8;
+  }
+  #kills {
+    font-size: 72px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums;
+    color: #fff; text-shadow: 0 0 12px #ff4a30, 0 0 40px rgba(255, 70, 40, 0.7);
+  }
+
+  .weapons {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 18px;
+  }
+
+  .weapon {
+    position: relative; width: 130px; height: 130px; border-radius: 22px; cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(160deg, #3a3a4d, #23232f);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    transition: transform 0.07s, border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+    touch-action: manipulation;
+  }
+  .weapon:hover {
+    border-color: rgba(255, 120, 80, 0.6);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6), 0 0 18px rgba(255, 90, 50, 0.3);
+  }
+  .weapon.active {
+    transform: scale(0.93);
+    border-color: #ff5a3c;
+    box-shadow: 0 0 26px rgba(255, 90, 50, 0.75), inset 0 0 20px rgba(255, 90, 50, 0.25);
+  }
+  .weapon.reloading {
+    border-color: #ffb020;
+    box-shadow: 0 0 26px rgba(255, 176, 32, 0.6), inset 0 0 20px rgba(255, 176, 32, 0.2);
+  }
+  .weapon.reloading svg { animation: reload-spin 0.5s ease-in-out infinite alternate; }
+  @keyframes reload-spin {
+    from { transform: rotate(-4deg); }
+    to   { transform: rotate(4deg); }
+  }
+
+  .weapon svg {
+    width: 76px; height: 54px; fill: #d8d8e2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    pointer-events: none;
+  }
+
+  .weapon .name {
+    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    color: #9a9ab0; pointer-events: none;
+  }
+
+  .ammo {
+    position: absolute; top: 6px; right: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    color: #8a8aa0; font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+  .ammo.low { color: #ff7040; }
+
+  .hint {
+    font-size: 13px; color: #6a6a80; letter-spacing: 1px; text-align: center;
+  }
+
+  @media (max-width: 620px) {
+    .weapon { width: 100px; height: 100px; border-radius: 18px; }
+    .weapon svg { width: 58px; height: 42px; }
+    #kills { font-size: 54px; }
+    .weapons { gap: 12px; }
+    .ammo { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="score-wrap" id="scoreWrap">
+    <div class="score-label">Убито</div>
+    <div id="kills">0</div>
+  </div>
+
+  <div class="weapons">
+
+    <!-- Пистолет: силуэт буквы «Г» — горизонтальный ствол + вертикальная рукоять -->
+    <div class="weapon" data-weapon="pistol" title="Пистолет">
+      <svg viewBox="0 0 120 80">
+        <!-- Горизонтальный ствол (верхняя палочка «Г») -->
+        <rect x="14" y="16" width="88" height="16" rx="3"/>
+        <!-- Вертикальная рукоять (нижняя палочка «Г») -->
+        <path d="M14 32 H36 L30 72 H8 Z"/>
+        <!-- Мушка -->
+        <rect x="94" y="10" width="8" height="6" rx="1"/>
+        <!-- Спусковая скоба — маленькая дуга у основания рукояти -->
+        <path d="M36 36 C36 50 44 56 54 56 V62 C40 62 30 54 30 36 Z"/>
+        <!-- Отверстие ствола -->
+        <rect x="96" y="21" width="8" height="6" rx="1" fill="#23232f"/>
+      </svg>
+      <span class="ammo" data-ammo="pistol">9</span>
+      <span class="name">Пистолет</span>
+    </div>
+
+    <!-- Пулемёт -->
+    <div class="weapon" data-weapon="mg" title="Пулемёт">
+      <svg viewBox="0 0 120 80">
+        <path d="M8 24 h70 v16 h-10 l-3 8 h-20 l-3 8 h-14 l3 -8 h-10 l-8 24 h-12 l8 -32 h-6 z"/>
+        <rect x="70" y="26" width="42" height="8" rx="3"/>
+        <rect x="74" y="22" width="6" height="16" rx="2"/>
+        <rect x="86" y="22" width="6" height="16" rx="2"/>
+        <rect x="98" y="22" width="6" height="16" rx="2"/>
+        <rect x="34" y="10" width="20" height="14" rx="3"/>
+        <path d="M94 34 l10 22 h-5 l-8 -18 z"/>
+        <path d="M94 34 l-2 22 h-5 l4 -18 z"/>
+      </svg>
+      <span class="ammo" data-ammo="mg">30</span>
+      <span class="name">Пулемёт</span>
+    </div>
+
+    <!-- Базука -->
+    <div class="weapon" data-weapon="bazooka" title="Базука">
+      <svg viewBox="0 0 100 76">
+        <path d="M4 32h68v12H4z"/>
+        <path d="M72 28l22 10-22 10z"/>
+        <rect x="20" y="44" width="18" height="18" rx="3"/>
+        <rect x="26" y="20" width="10" height="12" rx="2"/>
+      </svg>
+      <span class="ammo" data-ammo="bazooka">1</span>
+      <span class="name">Базука</span>
+    </div>
+
+    <!-- Танк -->
+    <div class="weapon" data-weapon="tank" title="Танк">
+      <svg viewBox="0 0 100 76">
+        <rect x="8" y="44" width="84" height="18" rx="8"/>
+        <rect x="20" y="30" width="52" height="16" rx="5"/>
+        <rect x="68" y="34" width="30" height="8" rx="3"/>
+        <circle cx="28" cy="62" r="7"/>
+        <circle cx="50" cy="62" r="7"/>
+        <circle cx="72" cy="62" r="7"/>
+      </svg>
+      <span class="ammo" data-ammo="tank">1</span>
+      <span class="name">Танк</span>
+    </div>
+  </div>
+
+  <div class="hint">Нажми — один выстрел · Удерживай — очередь</div>
+
+<script>
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ac = null;
+function getAC() {
+  if (!ac) ac = new AudioCtx();
+  if (ac.state === 'suspended') ac.resume();
+  return ac;
+}
+
+function noiseBurst({ dur = 0.15, vol = 0.5, filterType = 'lowpass', freq = 1200, Q = 0.8, freqEnd = null }) {
+  const ctx = getAC();
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const flt = ctx.createBiquadFilter();
+  flt.type = filterType;
+  flt.frequency.setValueAtTime(freq, ctx.currentTime);
+  if (freqEnd) flt.frequency.exponentialRampToValueAtTime(freqEnd, ctx.currentTime + dur);
+  flt.Q.value = Q;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  src.connect(flt).connect(gain).connect(ctx.destination);
+  src.start();
+  src.stop(ctx.currentTime + dur);
+}
+
+function thump({ freq = 120, freqEnd = 40, dur = 0.18, vol = 0.6, type = 'sine' }) {
+  const ctx = getAC();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freqEnd, ctx.currentTime + dur);
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + dur);
+}
+
+function click({ freq = 2200, vol = 0.25, dur = 0.03, type = 'bandpass', Q = 2.5, delay = 0 }) {
+  const ctx = getAC();
+  const t = ctx.currentTime + delay;
+  const len = Math.max(1, Math.floor(ctx.sampleRate * dur));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const flt = ctx.createBiquadFilter();
+  flt.type = type;
+  flt.frequency.setValueAtTime(freq, t);
+  flt.Q.value = Q;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(vol, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(flt).connect(gain).connect(ctx.destination);
+  src.start(t);
+  src.stop(t + dur);
+}
+
+const sounds = {
+  pistol() {
+    noiseBurst({ dur: 0.09, vol: 0.55, filterType: 'highpass', freq: 900, Q: 0.7 });
+    thump({ freq: 180, freqEnd: 60, dur: 0.12, vol: 0.5 });
+  },
+  mg() {
+    noiseBurst({ dur: 0.06, vol: 0.45, filterType: 'bandpass', freq: 1600, Q: 1.2 });
+    thump({ freq: 150, freqEnd: 55, dur: 0.08, vol: 0.4 });
+  },
+  bazooka() {
+    noiseBurst({ dur: 0.55, vol: 0.7, filterType: 'lowpass', freq: 1800, freqEnd: 150, Q: 0.6 });
+    thump({ freq: 90, freqEnd: 25, dur: 0.5, vol: 0.8 });
+    const ctx = getAC();
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(700, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(120, ctx.currentTime + 0.5);
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.5);
+  },
+  tank() {
+    noiseBurst({ dur: 0.7, vol: 0.85, filterType: 'lowpass', freq: 900, freqEnd: 80, Q: 0.5 });
+    thump({ freq: 70, freqEnd: 22, dur: 0.7, vol: 0.95 });
+    thump({ freq: 130, freqEnd: 45, dur: 0.35, vol: 0.5, type: 'triangle' });
+  }
+};
+
+const reloadSounds = {
+  pistol() {
+    click({ freq: 1800, vol: 0.22, dur: 0.035, delay: 0.0 });
+    click({ freq: 2400, vol: 0.20, dur: 0.03,  delay: 0.12 });
+    click({ freq: 1400, vol: 0.28, dur: 0.05,  delay: 0.28 });
+    click({ freq: 3000, vol: 0.18, dur: 0.025, delay: 0.40 });
+  },
+  mg() {
+    click({ freq: 1200, vol: 0.30, dur: 0.05,  delay: 0.0 });
+    click({ freq: 800,  vol: 0.35, dur: 0.07,  delay: 0.18 });
+    click({ freq: 1600, vol: 0.25, dur: 0.04,  delay: 0.38 });
+    click({ freq: 900,  vol: 0.30, dur: 0.06,  delay: 0.50 });
+    click({ freq: 2200, vol: 0.20, dur: 0.03,  delay: 0.62 });
+  },
+  bazooka() {
+    click({ freq: 600,  vol: 0.35, dur: 0.08,  delay: 0.0 });
+    thump({ freq: 200, freqEnd: 80, dur: 0.15, vol: 0.35 });
+    click({ freq: 1100, vol: 0.30, dur: 0.06,  delay: 0.45 });
+    click({ freq: 500,  vol: 0.32, dur: 0.07,  delay: 0.60 });
+  },
+  tank() {
+    click({ freq: 400,  vol: 0.40, dur: 0.09,  delay: 0.0 });
+    thump({ freq: 150, freqEnd: 50, dur: 0.25, vol: 0.5 });
+    click({ freq: 700,  vol: 0.35, dur: 0.08,  delay: 0.55 });
+    click({ freq: 350,  vol: 0.42, dur: 0.10,  delay: 0.75 });
+    thump({ freq: 90, freqEnd: 40, dur: 0.2, vol: 0.45 });
+  }
+};
+
+const killsEl = document.getElementById('kills');
+const scoreWrap = document.getElementById('scoreWrap');
+let kills = 0;
+
+function addKills(amount) {
+  kills += amount;
+  killsEl.textContent = kills;
+  scoreWrap.classList.add('bump');
+  clearTimeout(scoreWrap._t);
+  scoreWrap._t = setTimeout(() => scoreWrap.classList.remove('bump'), 90);
+}
+
+const WEAPONS = {
+  pistol:  { auto: true,  interval: 1000, kills: [1, 1],   magSize: 9  },
+  mg:      { auto: true,  interval: 110,  kills: [1, 1],   magSize: 30 },
+  bazooka: { auto: true,  interval: 450,  kills: [10, 15], magSize: 1  },
+  tank:    { auto: true,  interval: 900,  kills: [30, 50], magSize: 1  }
+};
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+document.querySelectorAll('.weapon').forEach(btn => {
+  const type = btn.dataset.weapon;
+  const cfg = WEAPONS[type];
+  const ammoEl = btn.querySelector(`.ammo[data-ammo="${type}"]`);
+
+  let ammo = cfg.magSize;
+  let reloading = false;
+  let reloadTimer = null;
+
+  let holdTimer = null;
+  let pressTimeout = null;
+  let isDown = false;
+
+  function updateAmmo() {
+    ammoEl.textContent = ammo;
+    ammoEl.classList.toggle('low', ammo <= Math.ceil(cfg.magSize * 0.25));
+  }
+  updateAmmo();
+
+  function doReload() {
+    if (reloading) return;
+    reloading = true;
+    btn.classList.add('reloading');
+    reloadSounds[type]();
+    const reloadDur = { pistol: 550, mg: 800, bazooka: 750, tank: 950 }[type];
+    reloadTimer = setTimeout(() => {
+      ammo = cfg.magSize;
+      updateAmmo();
+      reloading = false;
+      btn.classList.remove('reloading');
+      reloadTimer = null;
+      if (isDown) scheduleNextShot();
+    }, reloadDur);
+  }
+
+  function scheduleNextShot() {
+    clearTimeout(pressTimeout);
+    pressTimeout = setTimeout(() => {
+      if (!isDown || reloading) return;
+      attemptFire();
+      if (isDown && !reloading) scheduleNextShot();
+    }, cfg.interval);
+  }
+
+  function attemptFire() {
+    if (reloading) return;
+    if (ammo <= 0) { doReload(); return; }
+    ammo--;
+    updateAmmo();
+    sounds[type]();
+    addKills(randInt(cfg.kills[0], cfg.kills[1]));
+    if (ammo <= 0) doReload();
+  }
+
+  function stopHold() {
+    isDown = false;
+    clearTimeout(pressTimeout);
+    clearInterval(holdTimer);
+    pressTimeout = holdTimer = null;
+    btn.classList.remove('active');
+  }
+
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (isDown) return;
+    isDown = true;
+    btn.classList.add('active');
+    btn.setPointerCapture?.(e.pointerId);
+    attemptFire();
+    if (isDown && !reloading) scheduleNextShot();
+  });
+
+  btn.addEventListener('pointerup', stopHold);
+  btn.addEventListener('pointercancel', stopHold);
+  btn.addEventListener('pointerleave', () => { if (isDown) stopHold(); });
+
+  btn.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      if (!isDown) {
+        isDown = true;
+        btn.classList.add('active');
+        attemptFire();
+        if (isDown && !reloading) scheduleNextShot();
+      }
+    }
+  });
+  btn.addEventListener('keyup', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') stopHold();
+  });
+  btn.setAttribute('tabindex', '0');
+  btn.setAttribute('role', 'button');
+});
+
+document.addEventListener('pointerdown', () => getAC(), { once: true });
+document.addEventListener('keydown', () => getAC(), { once: true });
+</script>
+</body>
+</html>
